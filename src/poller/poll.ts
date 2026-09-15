@@ -1,22 +1,44 @@
 import { env } from '../config/env.js';
 import { prisma } from '../database/prisma.js';
 import { processAccount } from './process-account.js';
+import { pollEvents } from '../events/event-bus.js';
 
 let isRunning = false;
 let pollerTimer: NodeJS.Timeout | null = null;
 
+export interface PollCycleResult {
+  success: boolean;
+  alreadyRunning?: boolean;
+  durationMs?: number;
+  accountsProcessed?: number;
+  errorCount?: number;
+  message?: string;
+}
+
 /**
  * Ejecuta un ciclo individual de sondeo y procesamiento de cuentas
  */
-export async function runPollCycle(): Promise<void> {
+export async function runPollCycle(triggeredBy: 'auto' | 'manual' = 'auto'): Promise<PollCycleResult> {
   if (isRunning) {
     console.log('⏳ Ciclo de sondeo previo aún en ejecución. Omitiendo este turno.');
-    return;
+    return {
+      success: false,
+      alreadyRunning: true,
+      message: 'Un ciclo de sondeo ya se encuentra en ejecución.',
+    };
   }
 
   isRunning = true;
   const startedAt = new Date();
-  console.log(`\n🔄 [${startedAt.toISOString()}] Iniciando ciclo de sondeo de correos...`);
+  console.log(`\n🔄 [${startedAt.toISOString()}] Iniciando ciclo de sondeo de correos (Origen: ${triggeredBy})...`);
+
+  pollEvents.emitStarted({
+    timestamp: startedAt.toISOString(),
+    triggeredBy,
+  });
+
+  let accountsCount = 0;
+  let errorCount = 0;
 
   try {
     // 1. Obtener cuentas activas de usuarios activos
@@ -30,12 +52,14 @@ export async function runPollCycle(): Promise<void> {
       },
     });
 
-    console.log(`📬 Cuentas activas encontradas: ${accounts.length}`);
+    accountsCount = accounts.length;
+    console.log(`📬 Cuentas activas encontradas: ${accountsCount}`);
 
     for (const account of accounts) {
       try {
         await processAccount(account);
       } catch (err: any) {
+        errorCount++;
         console.error(`❌ Error procesando cuenta ${account.email} (${account.provider}):`, err.message);
         await prisma.emailAccount.update({
           where: { id: account.id },
@@ -47,11 +71,27 @@ export async function runPollCycle(): Promise<void> {
       }
     }
   } catch (error: any) {
+    errorCount++;
     console.error('❌ Error crítico en el ciclo de sondeo:', error);
   } finally {
     isRunning = false;
     const durationMs = Date.now() - startedAt.getTime();
     console.log(`✅ Ciclo de sondeo finalizado en ${durationMs}ms.\n`);
+
+    pollEvents.emitCompleted({
+      timestamp: new Date().toISOString(),
+      durationMs,
+      accountsProcessed: accountsCount,
+      errorCount,
+    });
+
+    return {
+      success: true,
+      durationMs,
+      accountsProcessed: accountsCount,
+      errorCount,
+      message: `Ciclo finalizado en ${durationMs}ms con ${accountsCount} cuenta(s) procesada(s).`,
+    };
   }
 }
 

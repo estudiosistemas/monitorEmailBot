@@ -11,7 +11,7 @@ dist/
 .env.example
 
 # documentos
-docs/
+# docs/ (versionado para mantener walkthroughs y documentación técnica)
 
 # Base de datos SQLite
 data/*.db

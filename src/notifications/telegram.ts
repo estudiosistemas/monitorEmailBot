@@ -15,7 +15,12 @@ export class TelegramService {
   /**
    * Envía un mensaje de texto a un chatId de Telegram aplicando reintentos exponenciales
    */
-  async sendMessageWithRetry(chatId: string, text: string, maxRetries = 3): Promise<void> {
+  async sendMessageWithRetry(
+    chatId: string,
+    text: string,
+    replyMarkup?: any,
+    maxRetries = 3
+  ): Promise<void> {
     if (!env.TELEGRAM_BOT_TOKEN) {
       console.warn('⚠️ TELEGRAM_BOT_TOKEN no configurado. Simulando envío a Telegram:');
       console.log(`[Telegram a ${chatId}]:\n${text}`);
@@ -27,17 +32,22 @@ export class TelegramService {
     let attempt = 0;
     let delayMs = 1000;
 
+    const payload: any = {
+      chat_id: chatId,
+      text,
+      parse_mode: 'HTML',
+    };
+    if (replyMarkup) {
+      payload.reply_markup = replyMarkup;
+    }
+
     while (attempt < maxRetries) {
       attempt++;
       try {
         const response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text,
-            parse_mode: 'HTML',
-          }),
+          body: JSON.stringify(payload),
         });
 
         if (response.ok) {

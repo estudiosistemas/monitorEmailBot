@@ -111,20 +111,93 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
       color: #fff;
       border-color: #3b82f6;
     }
+
+    /* Indicador de sincronización en vivo */
+    .sync-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.35);
+      color: #93c5fd;
+      animation: pulse-glow 1.5s infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+      50% { box-shadow: 0 0 12px 2px rgba(59, 130, 246, 0.25); }
+    }
+    .sync-spinner {
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(147, 197, 253, 0.3);
+      border-top-color: #93c5fd;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Sistema moderno de Notificaciones Toast */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      z-index: 9999;
+      pointer-events: none;
+    }
+    .toast {
+      min-width: 280px;
+      max-width: 420px;
+      padding: 0.85rem 1.25rem;
+      border-radius: 10px;
+      background: rgba(23, 32, 54, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.875rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast.success { border-color: rgba(16, 185, 129, 0.5); }
+    .toast.info { border-color: rgba(59, 130, 246, 0.5); }
+    .toast.warning { border-color: rgba(245, 158, 11, 0.5); }
+    .toast.danger { border-color: rgba(239, 68, 68, 0.5); }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
       <div>
-        <h1>📬 Mail Agent <span class="status-badge"><span class="pulse"></span> Activo</span></h1>
+        <h1>📬 Mail Agent <span class="status-badge" id="connBadge"><span class="pulse"></span> Activo</span></h1>
         <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Monitoreo de Correos con IA y Notificaciones Telegram</p>
       </div>
       <div style="display: flex; align-items: center; gap: 1rem;">
+        <div id="syncIndicator" class="sync-indicator" style="display: none;">
+          <span class="sync-spinner"></span> Sincronizando...
+        </div>
         <div style="text-align: right; font-size: 0.8rem; color: var(--text-muted);">
           <div>Sondeo automático: <span style="font-weight: 600; color: ${env.ENABLE_EMBEDDED_POLLER ? 'var(--success)' : 'var(--warning)'};">${env.ENABLE_EMBEDDED_POLLER ? `🟢 Activo (${env.POLL_INTERVAL_MINUTES} min)` : '⚠️ Inactivo'}</span></div>
+          <div id="lastSyncLabel" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">En espera de eventos...</div>
         </div>
-        <button class="btn-poll" onclick="triggerPoll()">⚡ Forzar Sondeo</button>
+        <button class="btn-poll" id="btnPoll" onclick="triggerPoll()">⚡ Forzar Sondeo</button>
       </div>
     </header>
 
@@ -235,21 +308,114 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
     </div>
   </div>
 
+  <div id="toastContainer" class="toast-container"></div>
+
   <script>
+    function showToast(message, type = 'info', duration = 3500) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      const icon = type === 'success' ? '✅' : type === 'warning' ? '⚠️' : type === 'danger' ? '❌' : 'ℹ️';
+      toast.innerHTML = '<span>' + icon + '</span><span style="flex: 1;">' + message + '</span>';
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.add('show'));
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    const syncIndicator = document.getElementById('syncIndicator');
+    const btnPoll = document.getElementById('btnPoll');
+    const lastSyncLabel = document.getElementById('lastSyncLabel');
+    const connBadge = document.getElementById('connBadge');
+
+    // Conectar a Server-Sent Events (SSE) para actualización en tiempo real
+    let eventSource;
+    function initSSE() {
+      try {
+        eventSource = new EventSource('/api/events');
+
+        eventSource.onopen = () => {
+          if (connBadge) {
+            connBadge.innerHTML = '<span class="pulse"></span> En Vivo';
+            connBadge.style.color = 'var(--success)';
+          }
+        };
+
+        eventSource.addEventListener('poll_started', (event) => {
+          const data = JSON.parse(event.data || '{}');
+          if (syncIndicator) syncIndicator.style.display = 'inline-flex';
+          if (btnPoll) {
+            btnPoll.innerText = '⏳ Sondeando...';
+            btnPoll.disabled = true;
+          }
+          showToast(
+            data.triggeredBy === 'manual'
+              ? '⚡ Sondeo manual iniciado...'
+              : '🔄 Sondeo automático programado iniciado...',
+            'info',
+            3000
+          );
+        });
+
+        eventSource.addEventListener('poll_completed', (event) => {
+          const data = JSON.parse(event.data || '{}');
+          if (syncIndicator) syncIndicator.style.display = 'none';
+          if (btnPoll) {
+            btnPoll.innerText = '⚡ Forzar Sondeo';
+            btnPoll.disabled = false;
+          }
+          if (lastSyncLabel) {
+            lastSyncLabel.innerText = 'Último sondeo: ' + new Date().toLocaleTimeString();
+          }
+
+          showToast('✅ Sondeo completado (' + (data.accountsProcessed || 0) + ' cuentas). Actualizando dashboard...', 'success', 2500);
+
+          // Recargar el dashboard con los datos recién sincronizados en la base de datos
+          setTimeout(() => {
+            window.location.reload();
+          }, 900);
+        });
+
+        eventSource.onerror = () => {
+          if (connBadge) {
+            connBadge.innerHTML = '⚠️ Reconectando...';
+            connBadge.style.color = 'var(--warning)';
+          }
+        };
+      } catch (e) {
+        console.warn('Error inicializando EventSource SSE:', e);
+      }
+    }
+
+    initSSE();
+
     async function triggerPoll() {
-      const btn = document.querySelector('.btn-poll');
-      btn.innerText = '⏳ Sondeando...';
-      btn.disabled = true;
+      if (btnPoll && btnPoll.disabled) return;
+      if (btnPoll) {
+        btnPoll.innerText = '⏳ Iniciando...';
+        btnPoll.disabled = true;
+      }
+
       try {
         const res = await fetch('/api/poll', { method: 'POST' });
         const data = await res.json();
-        alert(data.message);
-        setTimeout(() => location.reload(), 1500);
+        if (!res.ok || !data.success) {
+          showToast(data.message || data.error || 'No se pudo iniciar el sondeo', 'warning');
+          if (btnPoll) {
+            btnPoll.innerText = '⚡ Forzar Sondeo';
+            btnPoll.disabled = false;
+          }
+        }
+        // Si el sondeo fue exitoso, el evento SSE 'poll_completed' actualizará automáticamente la página
       } catch (err) {
-        alert('Error forzando sondeo: ' + err.message);
-      } finally {
-        btn.innerText = '⚡ Forzar Sondeo';
-        btn.disabled = false;
+        showToast('Error de conexión al forzar sondeo: ' + err.message, 'danger');
+        if (btnPoll) {
+          btnPoll.innerText = '⚡ Forzar Sondeo';
+          btnPoll.disabled = false;
+        }
       }
     }
 
@@ -261,12 +427,12 @@ export const dashboardRoutes: FastifyPluginAsync = async (app) => {
         const res = await fetch('/api/telegram/test?userId=' + userId, { method: 'POST' });
         const data = await res.json();
         if (res.ok) {
-          alert('✅ ' + data.message);
+          showToast('✅ ' + data.message, 'success');
         } else {
-          alert('❌ ' + (data.error || 'No se pudo enviar el mensaje'));
+          showToast('❌ ' + (data.error || 'No se pudo enviar el mensaje'), 'danger');
         }
       } catch (err) {
-        alert('❌ Error de conexión: ' + err.message);
+        showToast('❌ Error de conexión: ' + err.message, 'danger');
       } finally {
         btn.innerText = originalText;
         btn.disabled = false;

@@ -22,6 +22,10 @@ const envSchema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   OPENAI_MODEL: z.string().default('gpt-4o-mini'),
 
+  // OpenRouter (Modelo Free por defecto)
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_MODEL: z.string().default('openrouter/free'),
+
   // Telegram
   TELEGRAM_BOT_TOKEN: z.string().optional(),
 

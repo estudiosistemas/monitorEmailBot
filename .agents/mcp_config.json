@@ -6,6 +6,9 @@
       "env": {
         "RENDER_API_KEY": "${RENDER_API_KEY}"
       }
+    },
+    "openrouter": {
+      "serverUrl": "https://mcp.openrouter.ai/mcp"
     }
   }
 }
