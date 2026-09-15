@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: mail-agent-api
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm install -g pnpm && pnpm install --frozen-lockfile && pnpm prisma generate && pnpm run build
+    startCommand: pnpm prisma migrate deploy && pnpm run start
+    healthCheckPath: /health
+    disk:
+      name: mail-agent-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:/data/mail-agent.db
+      - key: ENABLE_EMBEDDED_POLLER
+        value: "true"
+      - key: POLL_INTERVAL_MINUTES
+        value: "5"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o-mini
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: MICROSOFT_CLIENT_ID
+        sync: false
+      - key: MICROSOFT_CLIENT_SECRET
+        sync: false
+      - key: MICROSOFT_REDIRECT_URI
+        sync: false

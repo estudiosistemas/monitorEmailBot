@@ -1,0 +1,129 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                   Int                   @id @default(autoincrement())
+  email                String                @unique
+  name                 String
+  active               Boolean               @default(true)
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  
+  emailAccounts        EmailAccount[]
+  telegramDestinations TelegramDestination[]
+
+  @@map("users")
+}
+
+model EmailAccount {
+  id              Int       @id @default(autoincrement())
+  userId          Int       @map("user_id")
+  provider        String    // 'gmail' | 'outlook' | 'imap'
+  email           String
+  displayName     String?   @map("display_name")
+  
+  // Credenciales OAuth cifradas
+  accessToken     String?   @map("access_token")
+  refreshToken    String?   @map("refresh_token")
+  tokenExpiresAt  DateTime? @map("token_expires_at")
+  
+  // Configuración IMAP (contraseña cifrada)
+  imapHost        String?   @map("imap_host")
+  imapPort        Int?      @map("imap_port")
+  imapUser        String?   @map("imap_user")
+  imapPassword    String?   @map("imap_password")
+  imapTls         Boolean   @default(true) @map("imap_tls")
+  
+  lastSyncAt      DateTime? @map("last_sync_at")
+  lastSyncError   String?   @map("last_sync_error")
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails          Email[]
+
+  @@map("email_accounts")
+}
+
+model Email {
+  id                Int            @id @default(autoincrement())
+  accountId         Int            @map("account_id")
+  providerMessageId String         @map("provider_message_id")
+  threadId          String?        @map("thread_id")
+  senderEmail       String         @map("sender_email")
+  senderName        String?        @map("sender_name")
+  subject           String
+  receivedAt        DateTime       @map("received_at")
+  bodyText          String         @map("body_text")
+  bodyHash          String?        @map("body_hash")
+  hasAttachments    Boolean        @default(false) @map("has_attachments")
+  processed         Boolean        @default(false)
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  account           EmailAccount   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  analysis          EmailAnalysis?
+  notifications     Notification[]
+
+  @@unique([accountId, providerMessageId])
+  @@index([accountId])
+  @@index([processed])
+  @@map("emails")
+}
+
+model EmailAnalysis {
+  id               Int      @id @default(autoincrement())
+  emailId          Int      @unique @map("email_id")
+  category         String
+  priority         Int      // 1 (Muy baja) a 5 (Crítica)
+  requiresResponse Boolean  @map("requires_response")
+  summary          String
+  sentiment        String?
+  model            String
+  promptVersion    String   @map("prompt_version")
+  analyzedAt       DateTime @default(now()) @map("analyzed_at")
+
+  email            Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+
+  @@map("email_analysis")
+}
+
+model TelegramDestination {
+  id            Int            @id @default(autoincrement())
+  userId        Int            @map("user_id")
+  chatId        String         @map("chat_id")
+  username      String?
+  active        Boolean        @default(true)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@map("telegram_destinations")
+}
+
+model Notification {
+  id                    Int                  @id @default(autoincrement())
+  emailId               Int                  @map("email_id")
+  userId                Int                  @map("user_id")
+  telegramDestinationId Int?                 @map("telegram_destination_id")
+  telegramChatId        String               @map("telegram_chat_id")
+  status                String               @default("pending") // pending | sent | failed
+  retryCount            Int                  @default(0) @map("retry_count")
+  sentAt                DateTime?            @map("sent_at")
+  error                 String?
+  createdAt             DateTime             @default(now()) @map("created_at")
+
+  email                 Email                @relation(fields: [emailId], references: [id], onDelete: Cascade)
+  telegramDestination   TelegramDestination? @relation(fields: [telegramDestinationId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@map("notifications")
+}
