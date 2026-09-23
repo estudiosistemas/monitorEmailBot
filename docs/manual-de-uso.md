@@ -16,7 +16,7 @@ pnpm dev
 
 Verás un mensaje como este:
 ```text
-🚀 Servidor escuchando en http://127.0.0.1:3000
+🚀 Servidor escuchando en http://127.0.0.1:3005
 ```
 > **Nota:** Mantén esa ventana de terminal abierta mientras utilices el sistema o configures cuentas.
 
@@ -51,26 +51,26 @@ Con el servidor encendido (`pnpm dev`), ejecuta en **PowerShell**:
 
 #### Para Mauricio (User ID 2):
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/api/telegram/connect?userId=2" -Method Post -ContentType "application/json" -Body '{"chatId": "1000785580", "username": "mauricio"}'
+Invoke-RestMethod -Uri "http://localhost:3005/api/telegram/connect?userId=2" -Method Post -ContentType "application/json" -Body '{"chatId": "1000785580", "username": "mauricio"}'
 ```
 
 #### Para Romina (User ID 1):
 *(Reemplaza `CHAT_ID_DE_ROMINA` por su número real)*:
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/api/telegram/connect?userId=1" -Method Post -ContentType "application/json" -Body '{"chatId": "8744759343", "username": "romina"}'
+Invoke-RestMethod -Uri "http://localhost:3005/api/telegram/connect?userId=1" -Method Post -ContentType "application/json" -Body '{"chatId": "8744759343", "username": "romina"}'
 ```
 
 ### Paso D: Enviar Mensaje de Prueba
 Tienes dos formas sencillas de probar la conexión de Telegram:
-1. **Desde el Dashboard Web:** Entra a **[http://localhost:3000/dashboard](http://localhost:3000/dashboard)** y haz clic en el botón azul **📲 Probar Telegram** ubicado en la tarjeta de cada usuario.
+1. **Desde el Dashboard Web:** Entra a **[http://localhost:3005/dashboard](http://localhost:3005/dashboard)** y haz clic en el botón azul **📲 Probar Telegram** ubicado en la tarjeta de cada usuario.
 2. **Desde PowerShell:**
    * Para Mauricio:
      ```powershell
-     Invoke-RestMethod -Uri "http://localhost:3000/api/telegram/test?userId=2" -Method Post
+     Invoke-RestMethod -Uri "http://localhost:3005/api/telegram/test?userId=2" -Method Post
      ```
    * Para Romina:
      ```powershell
-     Invoke-RestMethod -Uri "http://localhost:3000/api/telegram/test?userId=1" -Method Post
+     Invoke-RestMethod -Uri "http://localhost:3005/api/telegram/test?userId=1" -Method Post
      ```
 
 ---
@@ -83,7 +83,7 @@ Es la alternativa más rápida para correos corporativos o cuentas que no requie
 #### Conectar correo para Mauricio (User ID 2):
 Abre PowerShell y ejecuta:
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
+Invoke-RestMethod -Uri "http://localhost:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
   "email": "mauriciocosta@psicotest.ar",
   "displayName": "Mauricio Psicotest.ar",
   "imapHost": "imappro.zoho.com",
@@ -93,7 +93,7 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/accounts/imap?userId=2" -Metho
   "imapTls": true
 }'
 
-Invoke-RestMethod -Uri "http://localhost:3000/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
+Invoke-RestMethod -Uri "http://localhost:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
   "email": "info@psicotest.ar",
   "displayName": "Info Psicotest.ar",
   "imapHost": "imappro.zoho.com",
@@ -103,7 +103,7 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/accounts/imap?userId=2" -Metho
   "imapTls": true
 }'
 
-Invoke-RestMethod -Uri "http://localhost:3000/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
+Invoke-RestMethod -Uri "http://localhost:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
   "email": "contacto@estudiosistemas.com.ar",
   "displayName": "Contacto Estudio Sistemas",
   "imapHost": "c2622311.ferozo.com",
@@ -117,7 +117,7 @@ Invoke-RestMethod -Uri "http://localhost:3000/api/accounts/imap?userId=2" -Metho
 
 #### Conectar correo para Romina (User ID 1):
 ```powershell
-Invoke-RestMethod -Uri "http://localhost:3000/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
+Invoke-RestMethod -Uri "http://localhost:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
   "email": "marketing@psicotest.ar",
   "displayName": "Marketing Psicotest.ar",
   "imapHost": "imappro.zoho.com",
@@ -140,21 +140,21 @@ Para cuentas `@gmail.com`:
    * Crea credenciales de tipo **ID de cliente de OAuth 2.0 (Aplicación web)**.
    * En *URIs de redireccionamiento autorizados*, agrega:
      ```text
-     http://localhost:3000/auth/google/callback
+     http://localhost:3005/auth/google/callback
      ```
 2. Agrega las claves en tu [`.env`](file:///e:/SistemasWeb/bot-email/.env):
    ```env
    GOOGLE_CLIENT_ID="xxxx.apps.googleusercontent.com"
    GOOGLE_CLIENT_SECRET="xxxx"
-   GOOGLE_REDIRECT_URI="http://localhost:3000/auth/google/callback"
+   GOOGLE_REDIRECT_URI="http://localhost:3005/auth/google/callback"
    ```
 3. **Para vincular a Romina:** Abre en tu navegador:
    ```text
-   http://localhost:3000/auth/google?userId=1
+   http://localhost:3005/auth/google?userId=1
    ```
 4. **Para vincular a Mauricio:** Abre en tu navegador:
    ```text
-   http://localhost:3000/auth/google?userId=2
+   http://localhost:3005/auth/google?userId=2
    ```
    *Inicias sesión, aceptas los permisos y la cuenta quedará asociada automáticamente.*
 
@@ -165,16 +165,16 @@ Para cuentas `@gmail.com`:
 1. En [Azure Portal (Microsoft Entra ID)](https://portal.azure.com/):
    * Registra una aplicación con redirección Web:
      ```text
-     http://localhost:3000/auth/microsoft/callback
+     http://localhost:3005/auth/microsoft/callback
      ```
 2. Agrega las claves en tu [`.env`](file:///e:/SistemasWeb/bot-email/.env):
    ```env
    MICROSOFT_CLIENT_ID="xxxx"
    MICROSOFT_CLIENT_SECRET="xxxx"
-   MICROSOFT_REDIRECT_URI="http://localhost:3000/auth/microsoft/callback"
+   MICROSOFT_REDIRECT_URI="http://localhost:3005/auth/microsoft/callback"
    ```
-3. **Para vincular a Romina:** Abre en el navegador `http://localhost:3000/auth/microsoft?userId=1`.
-4. **Para vincular a Mauricio:** Abre en el navegador `http://localhost:3000/auth/microsoft?userId=2`.
+3. **Para vincular a Romina:** Abre en el navegador `http://localhost:3005/auth/microsoft?userId=1`.
+4. **Para vincular a Mauricio:** Abre en el navegador `http://localhost:3005/auth/microsoft?userId=2`.
 
 ---
 
@@ -202,10 +202,10 @@ Con esto, cada 5 minutos el bot consultará todas las cuentas y enviará alertas
 
 ### Forzar sondeo manual inmediato:
 Tienes dos formas:
-1. **Desde el Dashboard:** Entra a **[http://localhost:3000/dashboard](http://localhost:3000/dashboard)** y haz clic en el botón **⚡ Forzar Sondeo**.
+1. **Desde el Dashboard:** Entra a **[http://localhost:3005/dashboard](http://localhost:3005/dashboard)** y haz clic en el botón **⚡ Forzar Sondeo**.
 2. **Desde la consola:**
    ```powershell
-   Invoke-RestMethod -Uri "http://localhost:3000/api/poll" -Method Post
+   Invoke-RestMethod -Uri "http://localhost:3005/api/poll" -Method Post
    ```
 
 ---
@@ -227,3 +227,25 @@ Abrirá automáticamente un panel en `http://localhost:5555`.
   * **Solución:** Ejecuta `pnpm dev` en tu terminal antes de lanzar las peticiones.
 * **Telegram no envía el mensaje:**
   * Asegúrate de haber iniciado la conversación con tu bot en Telegram pulsando **Iniciar** (`/start`). Los bots de Telegram no pueden hablarle a usuarios que no hayan iniciado el chat primero.
+
+---
+
+## 🍓 8. Despliegue 24/7 en Raspberry Pi con Docker Compose
+
+Para dejar el bot funcionando de forma continua en tu Raspberry Pi sin depender de tu PC de desarrollo:
+
+1. **Copiar los archivos del proyecto** a la Raspberry Pi (por git o rsync/scp).
+2. **Crear el archivo `.env`** en la Raspberry Pi con tus tokens y secretos (`TELEGRAM_BOT_TOKEN`, `OPENROUTER_API_KEY`, `ENCRYPTION_KEY`, etc.).
+3. **Levantar el servicio:**
+   ```bash
+   docker compose up -d --build
+   ```
+4. **Verificar el estado:**
+   ```bash
+   docker compose ps
+   docker compose logs -f
+   ```
+5. **Acceso al Dashboard:**
+   Ingresa desde cualquier dispositivo en tu red a:
+   `http://<IP-DE-LA-RASPBERRY-PI>:3005/dashboard`
+

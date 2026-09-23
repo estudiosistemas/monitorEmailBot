@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.coerce.number().default(3000),
+  PORT: z.coerce.number().default(3005),
   HOST: z.string().default('0.0.0.0'),
   DATABASE_URL: z.string().default('file:./data/mail-agent.db'),
   ENCRYPTION_KEY: z.string().min(32, 'ENCRYPTION_KEY debe tener al menos 32 caracteres (o 64 caracteres en formato hex)'),

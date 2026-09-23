@@ -1,0 +1,45 @@
+services:
+  mail-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mail-agent:latest
+    container_name: mail-agent
+    restart: unless-stopped
+
+    # Mapeo de puertos: puerto del host (por defecto 3005) al 3005 del contenedor
+    ports:
+      - "${PORT:-3005}:3005"
+
+    # Persistencia de datos (Base de datos SQLite)
+    volumes:
+      - ./data:/app/data
+
+    # Carga de variables de entorno desde el archivo .env local
+    env_file:
+      - .env
+
+    # Variables de entorno prioritarias para el contenedor
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=3005
+      - DATABASE_URL=file:/app/data/mail-agent.db
+      - TZ=${TZ:-America/Argentina/Buenos_Aires}
+      # Limitar el uso de memoria de Node.js a 512MB para optimizar recursos en Raspberry Pi
+      - NODE_OPTIONS=--max-old-space-size=512
+
+    # Verificación de salud del servicio (usa el endpoint /health)
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3005/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+    # Rotación de logs para evitar desgastar o saturar la memoria microSD de la Raspberry Pi
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
