@@ -13,8 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Habilitar pnpm mediante Corepack oficial de Node.js
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Habilitar pnpm mediante Corepack oficial de Node.js fijando la versión 10
+RUN corepack enable && corepack prepare pnpm@10.12.1 --activate
 
 WORKDIR /app
 
