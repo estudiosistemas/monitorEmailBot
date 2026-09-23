@@ -22,14 +22,43 @@ Verás un mensaje como este:
 
 ---
 
-## 👥 1. Identificadores de Usuarios del Sistema
+## 👥 1. Identificadores y Creación de Usuarios
 
-El sistema trabaja con usuarios y aislamiento estricto:
+El sistema trabaja con usuarios y aislamiento estricto de datos:
 
 | Usuario | ID | Correo de Identificación |
 | :--- | :---: | :--- |
 | **Romina** | `1` | `romina@local.test` |
 | **Mauricio** | `2` | `mauricio@local.test` |
+
+### ¿Cómo se crean los usuarios?
+
+#### Método 1: Automático (Seed de Base de Datos)
+* **En Docker (Raspberry Pi):** Se crean automáticamente la primera vez que se inicia el contenedor (`docker-entrypoint.sh`).
+* **En Local:** Puedes crearlos o restablecerlos en cualquier momento ejecutando:
+  ```bash
+  pnpm prisma:seed
+  ```
+  *(El seed es idempotente: si ya existen, no los duplica ni altera sus datos).*
+
+#### Método 2: Crear usuarios adicionales vía API REST (`POST /api/users`)
+Con el servidor encendido, puedes crear nuevos usuarios enviando una petición:
+
+* **Desde PowerShell:**
+  ```powershell
+  Invoke-RestMethod -Uri "http://localhost:3005/api/users" -Method Post -ContentType "application/json" -Body '{"name": "Romina", "email": "romina@local.test"}'
+  ```
+* **Desde Bash (Linux / Raspberry Pi):**
+  ```bash
+  curl -X POST http://localhost:3005/api/users \
+    -H "Content-Type: application/json" \
+    -d '{"name": "Mauricio", "email": "mauricio@local.test"}'
+  ```
+
+#### Consultar los usuarios registrados (`GET /api/users`):
+```bash
+curl http://localhost:3005/api/users
+```
 
 ---
 
