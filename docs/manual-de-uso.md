@@ -32,33 +32,33 @@ Con el servidor encendido, crea a Romina y a Mauricio (o a cualquier usuario nue
 * **Desde PowerShell:**
   ```powershell
   # Crear a Romina (obtendrá User ID 1)
-  Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/users" -Method Post -ContentType "application/json" -Body '{"name": "Romina", "email": "romina@local.test"}'
+  Invoke-RestMethod -Uri "http://tuIP:3005/api/users" -Method Post -ContentType "application/json" -Body '{"name": "Romina", "email": "romina@local.test"}'
 
   # Crear a Mauricio (obtendrá User ID 2)
-  Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/users" -Method Post -ContentType "application/json" -Body '{"name": "Mauricio", "email": "mauricio@local.test"}'
+  Invoke-RestMethod -Uri "http://tuIP:3005/api/users" -Method Post -ContentType "application/json" -Body '{"name": "Mauricio", "email": "mauricio@local.test"}'
   ```
 * **Desde Bash (Linux / Raspberry Pi):**
   ```bash
   # Crear a Romina
-  curl -X POST http://192.168.68.150:3005/api/users \
+  curl -X POST http://tuIP:3005/api/users \
     -H "Content-Type: application/json" \
     -d '{"name": "Romina", "email": "romina@local.test"}'
 
   # Crear a Mauricio
-  curl -X POST http://192.168.68.150:3005/api/users \
+  curl -X POST http://tuIP:3005/api/users \
     -H "Content-Type: application/json" \
     -d '{"name": "Mauricio", "email": "mauricio@local.test"}'
   ```
 
 ### Consultar los usuarios registrados (`GET /api/users`):
-* Desde el navegador: `http://192.168.68.150:3005/api/users`
+* Desde el navegador: `http://tuIP:3005/api/users`
 * Por PowerShell:
   ```powershell
-  Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/users"
+  Invoke-RestMethod -Uri "http://tuIP:3005/api/users"
   ```
 * Por Bash:
   ```bash
-  curl http://192.168.68.150:3005/api/users
+  curl http://tuIP:3005/api/users
   ```
 
 ---
@@ -81,26 +81,26 @@ Con el servidor encendido (`pnpm dev`), ejecuta en **PowerShell**:
 
 #### Para Mauricio (User ID 2):
 ```powershell
-Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/telegram/connect?userId=2" -Method Post -ContentType "application/json" -Body '{"chatId": "1000785580", "username": "mauricio"}'
+Invoke-RestMethod -Uri "http://tuIP:3005/api/telegram/connect?userId=2" -Method Post -ContentType "application/json" -Body '{"chatId": "1000785580", "username": "mauricio"}'
 ```
 
 #### Para Romina (User ID 1):
 *(Reemplaza `CHAT_ID_DE_ROMINA` por su número real)*:
 ```powershell
-Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/telegram/connect?userId=1" -Method Post -ContentType "application/json" -Body '{"chatId": "8744759343", "username": "romina"}'
+Invoke-RestMethod -Uri "http://tuIP:3005/api/telegram/connect?userId=1" -Method Post -ContentType "application/json" -Body '{"chatId": "8744759343", "username": "romina"}'
 ```
 
 ### Paso D: Enviar Mensaje de Prueba
 Tienes dos formas sencillas de probar la conexión de Telegram:
-1. **Desde el Dashboard Web:** Entra a **[http://192.168.68.150:3005/dashboard](http://192.168.68.150:3005/dashboard)** y haz clic en el botón azul **📲 Probar Telegram** ubicado en la tarjeta de cada usuario.
+1. **Desde el Dashboard Web:** Entra a **[http://tuIP:3005/dashboard](http://tuIP:3005/dashboard)** y haz clic en el botón azul **📲 Probar Telegram** ubicado en la tarjeta de cada usuario.
 2. **Desde PowerShell:**
    * Para Mauricio:
      ```powershell
-     Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/telegram/test?userId=2" -Method Post
+     Invoke-RestMethod -Uri "http://tuIP:3005/api/telegram/test?userId=2" -Method Post
      ```
    * Para Romina:
      ```powershell
-     Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/telegram/test?userId=1" -Method Post
+     Invoke-RestMethod -Uri "http://tuIP:3005/api/telegram/test?userId=1" -Method Post
      ```
 
 ---
@@ -113,7 +113,7 @@ Es la alternativa más rápida para correos corporativos o cuentas que no requie
 #### Conectar correo para Mauricio (User ID 2):
 Abre PowerShell y ejecuta:
 ```powershell
-Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
+Invoke-RestMethod -Uri "http://tuIP:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
   "email": "mauriciocosta@psicotest.ar",
   "displayName": "Mauricio Psicotest.ar",
   "imapHost": "imappro.zoho.com",
@@ -123,7 +123,7 @@ Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/accounts/imap?userId=2" -
   "imapTls": true
 }'
 
-Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
+Invoke-RestMethod -Uri "http://tuIP:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
   "email": "info@psicotest.ar",
   "displayName": "Info Psicotest.ar",
   "imapHost": "imappro.zoho.com",
@@ -133,7 +133,7 @@ Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/accounts/imap?userId=2" -
   "imapTls": true
 }'
 
-Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
+Invoke-RestMethod -Uri "http://tuIP:3005/api/accounts/imap?userId=2" -Method Post -ContentType "application/json" -Body '{
   "email": "contacto@estudiosistemas.com.ar",
   "displayName": "Contacto Estudio Sistemas",
   "imapHost": "c2622311.ferozo.com",
@@ -147,7 +147,7 @@ Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/accounts/imap?userId=2" -
 
 #### Conectar correo para Romina (User ID 1):
 ```powershell
-Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/accounts/imap?userId=1" -Method Post -ContentType "application/json" -Body '{
+Invoke-RestMethod -Uri "http://tuIP:3005/api/accounts/imap?userId=1" -Method Post -ContentType "application/json" -Body '{
   "email": "marketing@psicotest.ar",
   "displayName": "Marketing Psicotest.ar",
   "imapHost": "imappro.zoho.com",
@@ -170,21 +170,21 @@ Para cuentas `@gmail.com`:
    * Crea credenciales de tipo **ID de cliente de OAuth 2.0 (Aplicación web)**.
    * En *URIs de redireccionamiento autorizados*, agrega:
      ```text
-     http://192.168.68.150:3005/auth/google/callback
+     http://tuIP:3005/auth/google/callback
      ```
 2. Agrega las claves en tu [`.env`](file:///e:/SistemasWeb/bot-email/.env):
    ```env
    GOOGLE_CLIENT_ID="xxxx.apps.googleusercontent.com"
    GOOGLE_CLIENT_SECRET="xxxx"
-   GOOGLE_REDIRECT_URI="http://192.168.68.150:3005/auth/google/callback"
+   GOOGLE_REDIRECT_URI="http://tuIP:3005/auth/google/callback"
    ```
 3. **Para vincular a Romina:** Abre en tu navegador:
    ```text
-   http://192.168.68.150:3005/auth/google?userId=1
+   http://tuIP:3005/auth/google?userId=1
    ```
 4. **Para vincular a Mauricio:** Abre en tu navegador:
    ```text
-   http://192.168.68.150:3005/auth/google?userId=2
+   http://tuIP:3005/auth/google?userId=2
    ```
    *Inicias sesión, aceptas los permisos y la cuenta quedará asociada automáticamente.*
 
@@ -195,16 +195,16 @@ Para cuentas `@gmail.com`:
 1. En [Azure Portal (Microsoft Entra ID)](https://portal.azure.com/):
    * Registra una aplicación con redirección Web:
      ```text
-     http://192.168.68.150:3005/auth/microsoft/callback
+     http://tuIP:3005/auth/microsoft/callback
      ```
 2. Agrega las claves en tu [`.env`](file:///e:/SistemasWeb/bot-email/.env):
    ```env
    MICROSOFT_CLIENT_ID="xxxx"
    MICROSOFT_CLIENT_SECRET="xxxx"
-   MICROSOFT_REDIRECT_URI="http://192.168.68.150:3005/auth/microsoft/callback"
+   MICROSOFT_REDIRECT_URI="http://tuIP:3005/auth/microsoft/callback"
    ```
-3. **Para vincular a Romina:** Abre en el navegador `http://192.168.68.150:3005/auth/microsoft?userId=1`.
-4. **Para vincular a Mauricio:** Abre en el navegador `http://192.168.68.150:3005/auth/microsoft?userId=2`.
+3. **Para vincular a Romina:** Abre en el navegador `http://tuIP:3005/auth/microsoft?userId=1`.
+4. **Para vincular a Mauricio:** Abre en el navegador `http://tuIP:3005/auth/microsoft?userId=2`.
 
 ---
 
@@ -232,10 +232,10 @@ Con esto, cada 5 minutos el bot consultará todas las cuentas y enviará alertas
 
 ### Forzar sondeo manual inmediato:
 Tienes dos formas:
-1. **Desde el Dashboard:** Entra a **[http://192.168.68.150:3005/dashboard](http://192.168.68.150:3005/dashboard)** y haz clic en el botón **⚡ Forzar Sondeo**.
+1. **Desde el Dashboard:** Entra a **[http://tuIP:3005/dashboard](http://tuIP:3005/dashboard)** y haz clic en el botón **⚡ Forzar Sondeo**.
 2. **Desde la consola:**
    ```powershell
-   Invoke-RestMethod -Uri "http://192.168.68.150:3005/api/poll" -Method Post
+   Invoke-RestMethod -Uri "http://tuIP:3005/api/poll" -Method Post
    ```
 
 ---

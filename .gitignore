@@ -10,6 +10,8 @@ dist/
 .env.*.local
 !.env.example
 
+manual-de-uso.md
+
 # documentos
 # docs/ (versionado para mantener walkthroughs y documentación técnica)
 
